@@ -34,7 +34,7 @@ end
 
 def item type, object={}
   object[:type] = type
-  object[:id] = random()
+  object['id'] = random()
   add object
 end
 
@@ -59,21 +59,27 @@ end
 
 def activeSites
   threshold = Time.now.to_i - @days*24*60*60
+  result = []
   Dir['../../*'].each do |path|
     pages = Dir["#{path}/pages/*"]
     count = pages.length
     next unless pages.index{|pagePath| File.mtime(pagePath).to_i > threshold}
+    dates = pages.map{|pagePath| File.mtime(pagePath).to_i}
+    date = dates.sort.first;
     site = File.basename path
     title = "Recent Changes"
     text = "#{site} has #{count} pages"
-    item :reference, {:site => "#{site}", :slug => slug(title), :title => title, :text => text}
+    result << {:date => date*1000, :site => "#{site}", :slug => slug(title), :title => title, :text => text}
   end
+  result
 end
 
 page 'Farm Activity' do
   paragraph "Sites hosted by this farm with activity in the last #{@days} days."
   paragraph "See also [[About Activity Plugin]]."
-  activeSites
+  activeSites.sort{|a,b|b[:date]<=>a[:date]}.each do |params|
+    item :reference, params
+  end
 end
 
 
