@@ -22,24 +22,24 @@ end
 # journal actions
 
 def create title
-  @journal << {'type' => 'create', 'id' => random, 'item' => {'title' => title}, 'date' => Time.now.to_i*1000}
+  @journal << {:type => :create, :id => random, :item => {:title => title}, :date => Time.now.to_i*1000}
 end
 
 def add item
   @story << item
-  @journal << {'type' => 'add', 'id' => item['id'], 'item' => item, 'date' => Time.now.to_i*1000}
+  @journal << {:type => :add, :id => item[:id], :item => item, :date => Time.now.to_i*1000}
 end
 
 # story emiters
 
 def item type, object={}
   object[:type] = type
-  object['id'] = random()
+  object[:id] = random()
   add object
 end
 
 def paragraph text
-  item 'paragraph', {:text => text}
+  item :paragraph, {:text => text}
 end
 
 def page title
@@ -47,7 +47,7 @@ def page title
   @journal = []
   create title
   yield
-  page = {'title' => title, 'story' => @story, 'journal' => @journal}
+  page = {:title => title, :story => @story, :journal => @journal}
   File.open("../pages/#{slug(title)}", 'w') do |file|
     file.write JSON.pretty_generate(page)
   end
@@ -56,20 +56,20 @@ end
 # generate pages
 
 @days = 10
+@port = ':1111' if `hostname` =~ /cg.local/
 
 def activeSites
   threshold = Time.now.to_i - @days*24*60*60
   result = []
   Dir['../../*'].each do |path|
     pages = Dir["#{path}/pages/*"]
-    count = pages.length
     next unless pages.index{|pagePath| File.mtime(pagePath).to_i > threshold}
     dates = pages.map{|pagePath| File.mtime(pagePath).to_i}
     date = dates.sort.first;
     site = File.basename path
     title = "Recent Changes"
-    text = "#{site} has #{count} pages"
-    result << {:date => date*1000, :site => "#{site}", :slug => slug(title), :title => title, :text => text}
+    text = "#{site} has #{pages.length} pages"
+    result << {:date => date*1000, :site => "#{site}#{@port||''}", :slug => slug(title), :title => title, :text => text}
   end
   result
 end
