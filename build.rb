@@ -64,7 +64,7 @@ def activeSites
   Dir['../../*'].each do |path|
     pages = Dir["#{path}/pages/*"]
     dates = pages.map{|pagePath| File.mtime(pagePath).to_i}
-    date = dates.sort.first
+    date = dates.sort.last
     next unless date and  date > threshold
     site = File.basename path
     title = "Recent Changes"
