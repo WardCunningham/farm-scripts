@@ -58,30 +58,64 @@ end
 @days = 10
 @port = ':1111' if `hostname` =~ /cg.local/
 
-def activeSites
+class Page
+  def initialize path
+    @path = path
+  end
+  def date
+    @date ||= File.mtime(@path).to_i
+  end
+  def <=> page
+    date <=> page.date
+  end
+end
+
+class Site
+  def initialize path
+    @path = path
+  end
+  def name
+    File.basename @path
+  end
+  def pages
+    return @pages unless @pages.nil?
+    paths = Dir["#{@path}/pages/*"] || []
+    @pages = paths.map{|path| Page.new path}
+  end
+  def recent
+    pages.sort.last
+  end
+  def claim
+    return @claim unless @claim.nil?
+    identity = "#{@path}/status/open_id.identity"
+    @claim = (File.exists? identity) ? `cat #{identity}` : ''
+  end
+  def claimed?
+    ! claim.empty?
+  end
+end
+
+@sites = Dir['../../*'].map {|path| Site.new path}
+
+def recentFarmActivity
   threshold = Time.now.to_i - @days*24*60*60
   result = []
-  Dir['../../*'].each do |path|
-    pages = Dir["#{path}/pages/*"]
-    dates = pages.map{|pagePath| File.mtime(pagePath).to_i}
-    date = dates.sort.last
-    next unless date and  date > threshold
-    site = File.basename path
+  @sites.each do |site|
+    next unless (recent = site.recent) and recent.date > threshold
     title = "Recent Changes"
-    text = "#{site} has #{pages.length} pages"
-    claim = "#{path}/status/open_id.identity"
-    text += " [#{`cat #{claim}`} claim]" if File.exists? claim
-    result << {:date => date*1000, :site => "#{site}#{@port||''}", :slug => slug(title), :title => title, :text => text}
+    text = "#{site.name} has #{site.pages.length} pages"
+    text += " [#{site.claim} claim]" if site.claimed?
+    result << {:date => recent.date*1000, :site => "#{site.name}#{@port||''}", :slug => slug(title), :title => title, :text => text}
   end
-  result
+  result.sort{|a,b|b[:date]<=>a[:date]}.each do |params|
+    item :reference, params
+  end
 end
 
 page 'Recent Farm Activity' do
   paragraph "Sites hosted by this farm with activity in the last #{@days} days."
   paragraph "See also [[About Activity Plugin]]."
-  activeSites.sort{|a,b|b[:date]<=>a[:date]}.each do |params|
-    item :reference, params
-  end
+  recentFarmActivity
 end
 
 
