@@ -68,6 +68,15 @@ class Page
   def <=> page
     date <=> page.date
   end
+  def object
+    @object ||= JSON.parse(File.read(@path))
+  end
+  def slug
+    File.basename @path
+  end
+  def title
+    object['title'] || slug
+  end
 end
 
 class Site
@@ -102,8 +111,8 @@ def recentFarmActivity
   result = []
   @sites.each do |site|
     next unless (recent = site.recent) and recent.date > threshold
-    title = "Recent Changes"
-    text = "#{site.name} has #{site.pages.length} pages"
+    title = recent.title || "Recent Changes"
+    text = "In [http://#{site.name}#{@port||''} #{site.name}] with #{site.pages.length} pages."
     text += " [#{site.claim} claim]" if site.claimed?
     result << {:date => recent.date*1000, :site => "#{site.name}#{@port||''}", :slug => slug(title), :title => title, :text => text}
   end
