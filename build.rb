@@ -76,7 +76,7 @@ def activeSites
   result
 end
 
-page 'Farm Activity' do
+page 'Recent Farm Activity' do
   paragraph "Sites hosted by this farm with activity in the last #{@days} days."
   paragraph "See also [[About Activity Plugin]]."
   activeSites.sort{|a,b|b[:date]<=>a[:date]}.each do |params|
