@@ -63,12 +63,14 @@ def activeSites
   result = []
   Dir['../../*'].each do |path|
     pages = Dir["#{path}/pages/*"]
-    next unless pages.index{|pagePath| File.mtime(pagePath).to_i > threshold}
     dates = pages.map{|pagePath| File.mtime(pagePath).to_i}
-    date = dates.sort.first;
+    date = dates.sort.first
+    next unless date and  date > threshold
     site = File.basename path
     title = "Recent Changes"
     text = "#{site} has #{pages.length} pages"
+    claim = "#{path}/status/open_id.identity"
+    text += " [#{`cat #{claim}`} claim]" if File.exists? claim
     result << {:date => date*1000, :site => "#{site}#{@port||''}", :slug => slug(title), :title => title, :text => text}
   end
   result
