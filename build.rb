@@ -111,6 +111,7 @@ def recentFarmActivity
   result = []
   @sites.each do |site|
     next unless (recent = site.recent) and recent.date > threshold
+    next unless site.claimed? or site.pages.length > 1
     title = recent.title || "Recent Changes"
     text = "In [http://#{site.name}#{@port||''} #{site.name}] with #{site.pages.length} pages."
     text += " [#{site.claim} claim]" if site.claimed?
