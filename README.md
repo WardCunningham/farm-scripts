@@ -8,7 +8,7 @@ would like to create report pages that help you manage a wiki farm.
 
 Invoke a script at your convenience or add a line to cron to run a script on a frequent schedule.
 
-    node build.coffee
+    ruby build.rb
 
 This builds a page `farm-activity` that contains a reference to the most recently edited 
 page in each qualifying wiki in the farm. This page works well with the Activity plugin
