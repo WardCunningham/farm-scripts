@@ -10,6 +10,6 @@ Invoke a script at your convenience or add a line to cron to run a script on a f
 
     ruby build.rb
 
-This builds a page `farm-activity` that contains a reference to the most recently edited 
+This builds a page `recent-farm-activity` that contains a reference to the most recently edited 
 page in each qualifying wiki in the farm. This page works well with the Activity plugin
 to give a farm operator a sense of what is happening in the farm.
