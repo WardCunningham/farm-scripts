@@ -121,9 +121,11 @@ def recentFarmActivity
     text += " [#{site.claim} claim]" if site.claimed?
     result << {:date => recent.date*1000, :site => "#{site.name}#{@port||''}", :slug => slug(title), :title => title, :text => text}
   end
-  result.sort{|a,b|a[:date]<=>b[:date]}.each do |params|
+  result.sort!{|a,b|a[:date]<=>b[:date]}.each do |params|
     item :reference, params
   end
+  exit(0) if result.last[:title] == 'Recent Farm Activity'
+  result
 end
 
 page 'Recent Farm Activity' do
