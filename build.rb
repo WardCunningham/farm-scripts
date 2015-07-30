@@ -22,12 +22,15 @@ end
 # journal actions
 
 def create title
-  @journal << {:type => :create, :id => random, :item => {:title => title}, :date => Time.now.to_i*1000}
+  host = `hostname`
+  script = "#{host.chomp}:#{File.expand_path($0)}"
+  repo = 'git@github.com:WardCunningham/farm-scripts.git'
+  @journal << {:type => :create, :id => random, :item => {:title => title}, :date => File.mtime($0).to_i*1000, :script => script, :repo => repo}
 end
 
 def add item
   @story << item
-  @journal << {:type => :add, :id => item[:id], :item => item, :date => Time.now.to_i*1000}
+  @journal << {:type => :add, :id => item[:id], :item => item, :date => item[:date] || File.mtime($0).to_i*1000}
 end
 
 # story emiters
@@ -118,7 +121,7 @@ def recentFarmActivity
     text += " [#{site.claim} claim]" if site.claimed?
     result << {:date => recent.date*1000, :site => "#{site.name}#{@port||''}", :slug => slug(title), :title => title, :text => text}
   end
-  result.sort{|a,b|b[:date]<=>a[:date]}.each do |params|
+  result.sort{|a,b|a[:date]<=>b[:date]}.each do |params|
     item :reference, params
   end
 end
